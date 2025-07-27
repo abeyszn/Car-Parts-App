@@ -1,0 +1,31 @@
+// Car Parts App (Frontend - Flutter) // Note: This is a simplified version for MVP. Backend setup follows below.
+
+// =============================== // lib/main.dart import 'package:flutter/material.dart'; import 'screens/home_screen.dart';
+
+void main() => runApp(CarPartsApp());
+
+class CarPartsApp extends StatelessWidget { @override Widget build(BuildContext context) { return MaterialApp( title: 'Car Parts Minna', theme: ThemeData(primarySwatch: Colors.green), home: HomeScreen(), ); } }
+
+// =============================== // lib/screens/home_screen.dart import 'package:flutter/material.dart'; import '../widgets/part_card.dart';
+
+class HomeScreen extends StatelessWidget { final List<Map<String, String>> parts = [ {'name': 'Toyota Brake Pad', 'price': '₦8,000', 'image': 'assets/brake_pad.png'}, {'name': 'Honda Oil Filter', 'price': '₦3,500', 'image': 'assets/oil_filter.png'}, ];
+
+@override Widget build(BuildContext context) { return Scaffold( appBar: AppBar(title: Text('Car Parts Minna')), body: ListView.builder( itemCount: parts.length, itemBuilder: (context, index) => PartCard( name: parts[index]['name']!, price: parts[index]['price']!, imagePath: parts[index]['image']!, ), ), ); } }
+
+// =============================== // lib/widgets/part_card.dart import 'package:flutter/material.dart';
+
+class PartCard extends StatelessWidget { final String name, price, imagePath; PartCard({required this.name, required this.price, required this.imagePath});
+
+@override Widget build(BuildContext context) { return Card( margin: EdgeInsets.all(10), child: ListTile( leading: Image.asset(imagePath, width: 50), title: Text(name), subtitle: Text(price), trailing: Icon(Icons.shopping_cart), onTap: () { ScaffoldMessenger.of(context).showSnackBar( SnackBar(content: Text('Added $name to cart')), ); }, ), ); } }
+
+// =============================== // Backend: Node.js (Express) // server.js const express = require('express'); const cors = require('cors'); const app = express();
+
+app.use(cors()); app.use(express.json());
+
+const parts = [ { id: 1, name: 'Toyota Brake Pad', price: 8000 }, { id: 2, name: 'Honda Oil Filter', price: 3500 }, ];
+
+app.get('/api/parts', (req, res) => { res.json(parts); });
+
+app.listen(3000, () => console.log('Server running on http://localhost:3000'));
+
+// =============================== // Instructions: // 1. Install Flutter SDK: https://docs.flutter.dev/get-started/install // 2. Run the app: flutter run // 3. Set up Node backend with node server.js // 4. Connect backend to frontend using HTTP requests (e.g., Dio package in Flutter) // 5. Add more features (auth, orders, payments) as needed
