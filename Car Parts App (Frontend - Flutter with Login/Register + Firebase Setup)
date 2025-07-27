@@ -1,0 +1,40 @@
+// Car Parts App (Frontend - Flutter with Login/Register + Firebase Setup) // ===================================== // pubspec.yaml dependencies (add): // firebase_core: ^2.0.0 // firebase_auth: ^4.0.0 // flutterfire_ui: ^0.4.0 // http: ^0.14.0
+
+// =============================== // lib/main.dart import 'package:flutter/material.dart'; import 'package:firebase_core/firebase_core.dart'; import 'package:firebase_auth/firebase_auth.dart'; import 'screens/home_screen.dart'; import 'screens/login_screen.dart'; import 'firebase_options.dart';
+
+void main() async { WidgetsFlutterBinding.ensureInitialized(); await Firebase.initializeApp( options: DefaultFirebaseOptions.currentPlatform, ); runApp(CarPartsApp()); }
+
+class CarPartsApp extends StatelessWidget { @override Widget build(BuildContext context) { return MaterialApp( title: 'Car Parts Minna', theme: ThemeData(primarySwatch: Colors.green), home: StreamBuilder<User?>( stream: FirebaseAuth.instance.authStateChanges(), builder: (context, snapshot) { if (snapshot.connectionState == ConnectionState.waiting) { return CircularProgressIndicator(); } else if (snapshot.hasData) { return HomeScreen(); } else { return LoginScreen(); } }, ), ); } }
+
+// =============================== // lib/screens/login_screen.dart import 'package:flutter/material.dart'; import 'package:firebase_auth/firebase_auth.dart';
+
+class LoginScreen extends StatelessWidget { final TextEditingController emailController = TextEditingController(); final TextEditingController passwordController = TextEditingController();
+
+Future<void> loginUser() async { await FirebaseAuth.instance.signInWithEmailAndPassword( email: emailController.text, password: passwordController.text, ); }
+
+Future<void> registerUser() async { await FirebaseAuth.instance.createUserWithEmailAndPassword( email: emailController.text, password: passwordController.text, ); }
+
+@override Widget build(BuildContext context) { return Scaffold( body: Padding( padding: const EdgeInsets.all(20.0), child: Column( mainAxisAlignment: MainAxisAlignment.center, children: [ TextField(controller: emailController, decoration: InputDecoration(labelText: 'Email')), TextField(controller: passwordController, decoration: InputDecoration(labelText: 'Password'), obscureText: true), ElevatedButton(onPressed: loginUser, child: Text('Login')), ElevatedButton(onPressed: registerUser, child: Text('Register')), ], ), ), ); } }
+
+// =============================== // Connect Flutter to Node.js Backend // lib/services/api_service.dart import 'dart:convert'; import 'package:http/http.dart' as http;
+
+class ApiService { static const baseUrl = 'http://10.0.2.2:3000/api'; // Use localhost for emulator
+
+static Future<List<dynamic>> fetchParts() async { final res = await http.get(Uri.parse('$baseUrl/parts')); if (res.statusCode == 200) { return jsonDecode(res.body); } else { throw Exception('Failed to load parts'); } } }
+
+// =============================== // Use ApiService in HomeScreen // Replace static parts list in lib/screens/home_screen.dart // with dynamic fetch: import '../services/api_service.dart';
+
+class HomeScreen extends StatefulWidget { @override _HomeScreenState createState() => _HomeScreenState(); }
+
+class _HomeScreenState extends State<HomeScreen> { List parts = [];
+
+@override void initState() { super.initState(); ApiService.fetchParts().then((data) => setState(() => parts = data)); }
+
+@override Widget build(BuildContext context) { return Scaffold( appBar: AppBar(title: Text('Car Parts Minna')), body: ListView.builder( itemCount: parts.length, itemBuilder: (context, index) => PartCard( name: parts[index]['name'], price: '₦${parts[index]['price']}', imagePath: 'assets/placeholder.png', ), ), ); } }
+
+// =============================== // Firebase Setup // 1. Visit: https://console.firebase.google.com // 2. Create a project > Add Android/iOS app // 3. Download google-services.json into android/app/ // 4. Enable Authentication > Email/Password // 5. Generate firebase_options.dart using: //    flutterfire configure
+
+// =============================== // Backend: No change needed yet, but can be extended to store users/orders
+
+// Let me know if you want to add user profile management or shopping cart functionality.
+
